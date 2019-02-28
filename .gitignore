@@ -1,0 +1,6 @@
+*.xpl
+win.xpl_resource.rc
+CMakeCache.txt
+CMakeFiles
+src/Makefile
+cmake_install.cmake

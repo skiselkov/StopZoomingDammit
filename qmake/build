@@ -1,0 +1,56 @@
+#!/bin/bash
+#
+# CDDL HEADER START
+#
+# This file and its contents are supplied under the terms of the
+# Common Development and Distribution License ("CDDL"), version 1.0.
+# You may only use this file in accordance with the terms of version
+# 1.0 of the CDDL.
+#
+# A full copy of the text of the CDDL should have accompanied this
+# source.  A copy of the CDDL is also available via the Internet at
+# http://www.illumos.org/license/CDDL.
+#
+# CDDL HEADER END
+#
+# Copyright 2019 Saso Kiselkov. All rights reserved.
+
+# Locate libacfutils and build it if necessary
+HOST_OS="$(uname)"
+release_dir="debug"
+output_dir=".."
+OUT_NAME="StopZoomingDammit.xpl"
+
+set -e
+
+# We'll try to build on N+1 CPUs we have available. The extra +1 is to allow
+# for one make instance to be blocking on disk.
+if [[ "$HOST_OS" = "Darwin" ]]; then
+	NCPUS=$(( $(sysctl -n hw.ncpu) + 1 ))
+else
+	NCPUS=$(( $(grep 'processor[[:space:]]\+:' /proc/cpuinfo  | wc -l) + \
+	    1 ))
+fi
+
+rm -rf "$release_dir" "$output_dir"/{win,mac,lin}_x64
+mkdir -p "$release_dir" "$output_dir"/{win,mac,lin}_x64
+
+make distclean > /dev/null || true
+
+if [[ "$HOST_OS" = "Darwin" ]]; then
+	qmake -spec macx-clang
+	make -j $NCPUS
+	mv "libmac.xpl.dylib" "$staging_dir/mac_x64/$OUT_NAME"
+else
+	qmake -set CROSS_COMPILE x86_64-w64-mingw32-
+	qmake -spec win32-g++
+	make -j $NCPUS
+	mv "$release_dir/win.xpl1.dll" "$output_dir/win_x64/$OUT_NAME"
+	make distclean > /dev/null || true
+
+	qmake -spec linux-g++-64
+	make -j $NCPUS
+	mv liblin.xpl.so "../lin_x64/$OUT_NAME"
+fi
+
+make distclean > /dev/null
