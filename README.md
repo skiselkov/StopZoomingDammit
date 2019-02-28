@@ -27,6 +27,12 @@ The plugin doesn't affect joystick or keyboard zoom commands
 (``sim/view/quick_look_*`` or the quick-look functions using NumPad
 keys). Those remain fully functional.
 
+## Installation
+
+Simply unzip the plugin and drop it under ``Resources/plugins`` in
+X-Plane. Then define your mouse-zoom-allow function as described above
+and that's it. There is no further configuration required.
+
 ## Compatibility
 
 The plugin should work with any X-Plane aircraft. However, it might
