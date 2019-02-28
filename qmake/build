@@ -40,7 +40,7 @@ make distclean > /dev/null || true
 if [[ "$HOST_OS" = "Darwin" ]]; then
 	qmake -spec macx-clang
 	make -j $NCPUS
-	mv "libmac.xpl.dylib" "$staging_dir/mac_x64/$OUT_NAME"
+	mv "libmac.xpl.dylib" "$output_dir/mac_x64/$OUT_NAME"
 else
 	qmake -set CROSS_COMPILE x86_64-w64-mingw32-
 	qmake -spec win32-g++
