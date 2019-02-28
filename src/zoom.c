@@ -28,6 +28,7 @@
 #include <acfutils/assert.h>
 #include <acfutils/cmd.h>
 #include <acfutils/dr.h>
+#include <acfutils/math.h>
 #include <acfutils/log.h>
 #include <acfutils/time.h>
 
@@ -92,6 +93,16 @@ static double		zoom_tgt = 1.0;
 
 static struct {
 	dr_t		view_is_ext;
+	dr_t		local_vx;
+	dr_t		local_vy;
+	dr_t		local_vz;
+	dr_t		local_ax;
+	dr_t		local_ay;
+	dr_t		local_az;
+	dr_t		P;
+	dr_t		Q;
+	dr_t		R;
+	dr_t		frame_intval;
 } drs;
 
 static struct {
@@ -116,9 +127,26 @@ cam_ctl_cb(XPLMCameraPosition_t *pos, int losing_ctl, void *refcon)
 		/* Learning phase - follow X-Plane's zooming behavior */
 		zoom_tgt = pos->zoom;
 	} else if (pos->zoom != zoom_tgt) {
+		double intval = dr_getf(&drs.frame_intval);
+		double vx = dr_getf(&drs.local_vx);
+		double vy = dr_getf(&drs.local_vy);
+		double vz = dr_getf(&drs.local_vz);
+		double ax = dr_getf(&drs.local_ax);
+		double ay = dr_getf(&drs.local_ay);
+		double az = dr_getf(&drs.local_az);
+
 		/* Inhibit - prevent X-Plane from zooming */
 		pos->zoom = zoom_tgt;
+		/* Adjust camera to next frame position */
+		pos->x += vx * intval + 0.5 * ax * POW2(intval);
+		pos->y += vy * intval + 0.5 * ay * POW2(intval);
+		pos->z += vz * intval + 0.5 * az * POW2(intval);
+		pos->roll += dr_getf(&drs.P) * intval;
+		pos->pitch += dr_getf(&drs.Q) * intval;
+		pos->heading += dr_getf(&drs.R) * intval;
+
 		allow_zoom_t = 0;
+
 		return (1);
 	}
 
@@ -228,6 +256,16 @@ XPluginEnable(void)
 	XPLMRegisterDrawCallback(draw_cb, xplm_Phase_FirstScene, 1, NULL);
 
 	fdr_find(&drs.view_is_ext, "sim/graphics/view/view_is_external");
+	fdr_find(&drs.local_vx, "sim/flightmodel/position/local_vx");
+	fdr_find(&drs.local_vy, "sim/flightmodel/position/local_vy");
+	fdr_find(&drs.local_vz, "sim/flightmodel/position/local_vz");
+	fdr_find(&drs.local_ax, "sim/flightmodel/position/local_ax");
+	fdr_find(&drs.local_ay, "sim/flightmodel/position/local_ay");
+	fdr_find(&drs.local_az, "sim/flightmodel/position/local_az");
+	fdr_find(&drs.P, "sim/flightmodel/position/P");
+	fdr_find(&drs.Q, "sim/flightmodel/position/Q");
+	fdr_find(&drs.R, "sim/flightmodel/position/R");
+	fdr_find(&drs.frame_intval, "sim/operation/misc/frame_rate_period");
 
 	for (int i = 0; i < 20; i++) {
 		cmd_bind("sim/view/quick_look_%d", quick_look_cmd_cb,
