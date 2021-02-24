@@ -236,7 +236,7 @@ XPluginStart(char *name, char *sig, char *desc)
 	XPLMEnableFeature("XPLM_USE_NATIVE_WIDGET_WINDOWS", 1);
 
 	log_init(XPLMDebugString, "StopZoomingDammit");
-	logMsg("This is StopZoomingDammit");
+	logMsg("This is StopZoomingDammit build " PLUGIN_VERSION);
 
 	strcpy(name, PLUGIN_NAME);
 	strcpy(sig, PLUGIN_SIG);
