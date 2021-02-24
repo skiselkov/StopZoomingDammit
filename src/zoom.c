@@ -13,7 +13,7 @@
  * CDDL HEADER END
 */
 /*
- * Copyright 2019 Saso Kiselkov. All rights reserved.
+ * Copyright 2021 Saso Kiselkov. All rights reserved.
  */
 
 #include <stdio.h>
@@ -253,7 +253,7 @@ XPluginStop(void)
 PLUGIN_API int
 XPluginEnable(void)
 {
-	XPLMRegisterDrawCallback(draw_cb, xplm_Phase_FirstScene, 1, NULL);
+	XPLMRegisterDrawCallback(draw_cb, xplm_Phase_Window, 1, NULL);
 
 	fdr_find(&drs.view_is_ext, "sim/graphics/view/view_is_external");
 	fdr_find(&drs.local_vx, "sim/flightmodel/position/local_vx");
@@ -296,7 +296,7 @@ XPluginEnable(void)
 PLUGIN_API void
 XPluginDisable(void)
 {
-	XPLMUnregisterDrawCallback(draw_cb, xplm_Phase_FirstScene, 1, NULL);
+	XPLMUnregisterDrawCallback(draw_cb, xplm_Phase_Window, 1, NULL);
 
 	for (int i = 0; i < 20; i++) {
 		cmd_unbind("sim/view/quick_look_%d", quick_look_cmd_cb,
